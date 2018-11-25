@@ -1,0 +1,7 @@
+[package]
+name = "animbox"
+version = "0.1.0"
+authors = ["whoisfpc <wo_fpc@outlook.com>"]
+
+[dependencies]
+winit = "0.18.0"
