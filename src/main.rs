@@ -1,19 +1,49 @@
-extern crate winit;
+extern crate glutin;
+extern crate gl;
+
+use glutin::GlContext;
+use glutin::Event;
+use glutin::dpi::*;
 
 fn main() {
-    let mut events_loop = winit::EventsLoop::new();
-    let builder = winit::WindowBuilder::new()
-        .with_dimensions((900, 700).into())
-        .with_title("animbox");
-    let _window = builder.build(&events_loop).unwrap();
+    let mut events_loop = glutin::EventsLoop::new();
+    let window = glutin::WindowBuilder::new()
+        .with_title("animbox")
+        .with_dimensions(LogicalSize::new(900.0, 700.0));
+    let context = glutin::ContextBuilder::new().with_vsync(true);
+    let gl_window = glutin::GlWindow::new(window, context, &events_loop).unwrap();
 
-    events_loop.run_forever(|event| {
-        match event {
-            winit::Event::WindowEvent {
-              event: winit::WindowEvent::CloseRequested,
-              ..
-            } => winit::ControlFlow::Break,
-            _ => winit::ControlFlow::Continue,
+    unsafe {
+        gl_window.make_current().unwrap();
+    }
+
+    unsafe {
+        gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
+        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+    }
+
+    let mut running = true;
+
+    while running {
+        events_loop.poll_events(|event| {
+            match event {
+                Event::WindowEvent { event, .. } => match event {
+                    glutin::WindowEvent::CloseRequested => running = false,
+                    glutin::WindowEvent::Resized(logical_size) => {
+                        let dpi_factor = gl_window.get_hidpi_factor();
+                        gl_window.resize(logical_size.to_physical(dpi_factor));
+                    },
+                    _ => ()
+                },
+                _ => ()
+            }
+        });
+
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
         }
-    });
+
+        gl_window.swap_buffers().unwrap();
+    }
+
 }
