@@ -7,35 +7,11 @@ use glutin::dpi::*;
 
 use gl::types::*;
 
-
-const VS_SRC: &'static [u8] = b"
-#version 330 core
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec3 color;
-
-out Vertex_Data {
-    vec3 color;
-} OUT;
-
-void main() {
-    gl_Position = vec4(position, 0.0, 1.0);
-    OUT.color = color;
-}
-\0";
-
-const FS_SRC: &'static [u8] = b"
-#version 330 core
-
-in Vertex_Data {
-    vec3 color;
-} IN;
-
-void main() {
-    gl_FragColor = vec4(IN.color, 1.0);
-}
-\0";
+mod shader_program;
+use shader_program::*;
 
 fn main() {
+
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("animbox")
@@ -59,72 +35,12 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
-    let vs = unsafe { gl::CreateShader(gl::VERTEX_SHADER) };
-    let fs = unsafe { gl::CreateShader(gl::FRAGMENT_SHADER) };
+    let shader_program = ShaderProgram::from_file("triangle", ProgramType::Render);
 
-    let program_id = unsafe { gl::CreateProgram() };
     let mut vao: GLuint = 0;
 
     unsafe {
-        // Setup shader compilation checks
-        let mut success = i32::from(gl::FALSE);
-        let mut info_log = Vec::with_capacity(512);
-        info_log.set_len(512 - 1); // -1 to skip trialing null character
-
-        gl::ShaderSource(vs, 1, [VS_SRC.as_ptr() as *const _].as_ptr(), std::ptr::null());
-        gl::CompileShader(vs);
-        // Check for shader compilation errors
-        gl::GetShaderiv(vs, gl::COMPILE_STATUS, &mut success);
-        if success != i32::from(gl::TRUE) {
-            gl::GetShaderInfoLog(
-                vs,
-                512,
-                std::ptr::null_mut(),
-                info_log.as_mut_ptr() as *mut GLchar,
-            );
-            println!(
-                "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n{}",
-                std::str::from_utf8(&info_log).unwrap()
-            );
-        }
-        gl::ShaderSource(fs, 1, [FS_SRC.as_ptr() as *const _].as_ptr(), std::ptr::null());
-        gl::CompileShader(fs);
-        // Check for shader compilation errors
-        gl::GetShaderiv(fs, gl::COMPILE_STATUS, &mut success);
-        if success != i32::from(gl::TRUE) {
-            gl::GetShaderInfoLog(
-                fs,
-                512,
-                std::ptr::null_mut(),
-                info_log.as_mut_ptr() as *mut GLchar,
-            );
-            println!(
-                "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n{}",
-                std::str::from_utf8(&info_log).unwrap()
-            );
-        }
-
-        gl::AttachShader(program_id, vs);
-        gl::AttachShader(program_id, fs);
-        gl::LinkProgram(program_id);
-
-        // Check for linking errors
-        gl::GetProgramiv(program_id, gl::LINK_STATUS, &mut success);
-        if success != i32::from(gl::TRUE) {
-            gl::GetProgramInfoLog(
-                program_id,
-                512,
-                std::ptr::null_mut(),
-                info_log.as_mut_ptr() as *mut GLchar,
-            );
-            println!(
-                "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n{}",
-                std::str::from_utf8(&info_log).unwrap()
-            );
-        }
-        gl::DeleteShader(vs);
-        gl::DeleteShader(fs);
-        gl::UseProgram(program_id);
+        gl::UseProgram(shader_program.id());
 
         let mut vbo: GLuint = 0;
         gl::GenBuffers(1, &mut vbo);
