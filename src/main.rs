@@ -1,14 +1,16 @@
 extern crate glutin;
 extern crate gl;
+extern crate nalgebra_glm as glm;
 
 use glutin::GlContext;
 use glutin::Event;
 use glutin::dpi::*;
 
-use gl::types::*;
-
 mod shader_program;
 use shader_program::*;
+
+mod model;
+mod camera;
 
 fn main() {
 
@@ -23,12 +25,6 @@ fn main() {
         gl_window.make_current().unwrap();
     }
 
-    let vertices: Vec<f32> = vec![
-        -0.5, -0.5, 1.0, 0.0, 0.0,
-        0.5, -0.5, 0.0, 1.0, 0.0,
-        0.0, 0.5, 0.0, 0.0, 1.0
-    ];
-
     unsafe {
         gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         gl::Viewport(0, 0, 900, 700);
@@ -36,47 +32,8 @@ fn main() {
     }
 
     let shader_program = ShaderProgram::from_file("triangle", ProgramType::Render);
-
-    let mut vao: GLuint = 0;
-
-    unsafe {
-        gl::UseProgram(shader_program.id());
-
-        let mut vbo: GLuint = 0;
-        gl::GenBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (vertices.len() * std::mem::size_of::<f32>()) as GLsizeiptr,
-            vertices.as_ptr() as *const GLvoid,
-            gl::STATIC_DRAW,
-        );
-
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-        gl::EnableVertexAttribArray(0);
-        gl::VertexAttribPointer(
-            0,
-            2,
-            gl::FLOAT,
-            gl::FALSE,
-            (5 * std::mem::size_of::<f32>()) as GLsizei,
-            std::ptr::null()
-        );
-
-        gl::EnableVertexAttribArray(1);
-        gl::VertexAttribPointer(
-            1,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            (5 * std::mem::size_of::<f32>()) as GLsizei,
-            (2 * std::mem::size_of::<f32>()) as *const GLvoid
-        );
-
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    }
-
+    let mut triangle = model::Model::new();
+    triangle.make_triangle();
 
     let mut running = true;
 
@@ -98,13 +55,9 @@ fn main() {
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(
-                gl::TRIANGLES,
-                0,
-                3
-            );
         }
+
+        triangle.draw_triangle(shader_program.id());
 
         gl_window.swap_buffers().unwrap();
     }
