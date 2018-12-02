@@ -68,4 +68,14 @@ impl Camera {
         let project = glm::perspective(self.aspect, glm::pi::<f32>() * self.fov / 180.0 , self.near_clip, self.far_clip);
         self.view_proj_mat = project * view;
     }
+
+    pub fn reset(&mut self) {
+        self.fov = 45.0;
+        self.aspect = 1.33;
+        self.near_clip = 0.1;
+        self.far_clip = 100.0;
+        self.distance = 10.0;
+        self.azimuth = 0.0;
+        self.incline = 20.0;
+    }
 }

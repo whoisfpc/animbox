@@ -11,6 +11,7 @@ use shader_program::*;
 
 mod model;
 mod camera;
+mod spinning_cube;
 
 fn main() {
 
@@ -33,15 +34,10 @@ fn main() {
         gl::Enable(gl::CULL_FACE);
     }
 
-    // let shader_program = ShaderProgram::from_file("triangle", ProgramType::Render);
-    // let mut triangle = model::Model::new();
-    // triangle.make_triangle();
-
     let shader_program = ShaderProgram::from_file("model", ProgramType::Render);
     let mut camera = camera::Camera::new();
     camera.set_aspect(900.0 / 700.0);
-    let mut cube = model::Model::new();
-    cube.make_box(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(1.0, 1.0, 1.0));
+    let mut cube = spinning_cube::SpinningCube::new();
 
     let mut running = true;
 
@@ -55,6 +51,18 @@ fn main() {
                         gl_window.resize(logical_size.to_physical(dpi_factor));
                         unsafe { gl::Viewport(0, 0, logical_size.width as i32, logical_size.height as i32); }
                     },
+                    glutin::WindowEvent::KeyboardInput { input, .. } => {
+                        match input.virtual_keycode {
+                            Some(glutin::VirtualKeyCode::R) => {
+                                if input.state == glutin::ElementState::Pressed {
+                                    camera.reset();
+                                    camera.set_aspect(900.0/700.0);
+                                    cube.reset();
+                                }
+                            },
+                            _ => {}
+                        }
+                    },
                     _ => ()
                 },
                 _ => ()
@@ -65,8 +73,8 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
         camera.update();
-
-        cube.draw(glm::Mat4::identity(), camera.get_view_proj_mat(), shader_program.id());
+        cube.update();
+        cube.draw(camera.get_view_proj_mat(), shader_program.id());
 
         gl_window.swap_buffers().unwrap();
     }
