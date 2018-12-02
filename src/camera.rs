@@ -56,4 +56,16 @@ impl Camera {
     pub fn get_view_proj_mat(&self) -> glm::Mat4 {
         self.view_proj_mat
     }
+
+    pub fn update(&mut self) {
+        let mut world = glm::Mat4::identity();
+        world[(2, 3)] = self.distance;
+        world = glm::rotation(glm::pi::<f32>() * -self.azimuth / 180.0, &glm::vec3(0.0, 1.0, 0.0))
+            * glm::rotation(glm::pi::<f32>() * -self.incline / 180.0, &glm::vec3(1.0, 0.0, 0.0))
+            * world;
+
+        let view = glm::inverse(&world);
+        let project = glm::perspective(self.aspect, glm::pi::<f32>() * self.fov / 180.0 , self.near_clip, self.far_clip);
+        self.view_proj_mat = project * view;
+    }
 }

@@ -29,11 +29,19 @@ fn main() {
         gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         gl::Viewport(0, 0, 900, 700);
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        gl::Enable(gl::DEPTH_TEST);
+        gl::Enable(gl::CULL_FACE);
     }
 
-    let shader_program = ShaderProgram::from_file("triangle", ProgramType::Render);
-    let mut triangle = model::Model::new();
-    triangle.make_triangle();
+    // let shader_program = ShaderProgram::from_file("triangle", ProgramType::Render);
+    // let mut triangle = model::Model::new();
+    // triangle.make_triangle();
+
+    let shader_program = ShaderProgram::from_file("model", ProgramType::Render);
+    let mut camera = camera::Camera::new();
+    camera.set_aspect(900.0 / 700.0);
+    let mut cube = model::Model::new();
+    cube.make_box(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(1.0, 1.0, 1.0));
 
     let mut running = true;
 
@@ -54,10 +62,11 @@ fn main() {
         });
 
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
+        camera.update();
 
-        triangle.draw_triangle(shader_program.id());
+        cube.draw(glm::Mat4::identity(), camera.get_view_proj_mat(), shader_program.id());
 
         gl_window.swap_buffers().unwrap();
     }

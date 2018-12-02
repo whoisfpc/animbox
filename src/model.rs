@@ -181,39 +181,21 @@ impl Model {
             let mvp_mat = view_proj_mat * model_mat;
             gl::UniformMatrix4fv(gl::GetUniformLocation(shader, b"ModelViewProjMtx\0".as_ptr() as _), 1, gl::FALSE, mvp_mat.as_slice().as_ptr() as _);
 
-            gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.index_buffer);
+            gl::BindVertexArray(self.vao);
 
             let pos_location: GLuint = 0;
-            gl::EnableVertexAttribArray(pos_location);
-            gl::VertexAttribPointer(
-                pos_location,
-                3,
-                gl::FLOAT,
-                gl::FALSE,
-                (std::mem::size_of::<ModelVertex>()) as GLsizei,
-                std::ptr::null()
-            );
-
             let norm_location: GLuint = 1;
+
+            gl::EnableVertexAttribArray(pos_location);
             gl::EnableVertexAttribArray(norm_location);
-            gl::VertexAttribPointer(
-                norm_location,
-                3,
-                gl::FLOAT,
-                gl::FALSE,
-                (std::mem::size_of::<ModelVertex>()) as GLsizei,
-                (3 * std::mem::size_of::<f32>()) as *const GLvoid
-            );
 
             gl::DrawElements(gl::TRIANGLES, self.count, gl::UNSIGNED_INT, std::ptr::null());
 
             gl::DisableVertexAttribArray(pos_location);
             gl::DisableVertexAttribArray(norm_location);
-
+            gl::BindVertexArray(self.vao);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-
             gl::UseProgram(0);
         }
     }
