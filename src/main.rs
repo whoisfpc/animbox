@@ -17,6 +17,11 @@ fn main() {
 
     let mut width: f32 = 900.0;
     let mut height: f32 = 700.0;
+    let mut mouse_x = 0.0;
+    let mut mouse_y = 0.0;
+    let mut left_down = false;
+    let mut middle_down = false;
+    let mut right_down = false;
 
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
@@ -66,6 +71,36 @@ fn main() {
                                     cube.reset();
                                 }
                             },
+                            _ => {}
+                        }
+                    },
+                    glutin::WindowEvent::CursorMoved { position, .. } => {
+                        let max_delta: f32 = 100.0;
+                        let dx = glm::clamp_scalar(position.x as f32 - mouse_x, -max_delta, max_delta);
+                        let dy = glm::clamp_scalar(-(position.y as f32 - mouse_y), -max_delta, max_delta);
+
+                        mouse_x = position.x as f32;
+                        mouse_y = position.y as f32;
+
+                        if left_down {
+                            let rate = 1.0;
+                            let azimuth = camera.get_azimuth();
+                            let incline = camera.get_incline();
+                            camera.set_azimuth(azimuth + dx * rate);
+                            camera.set_incline(glm::clamp_scalar(incline-dy*rate, -90.0, 90.0));
+                        }
+
+                        if right_down {
+                            let rate = 0.005;
+                            let distance = glm::clamp_scalar(camera.get_distance() * (1.0 - dx * rate), 0.01, 1000.0);
+                            camera.set_distance(distance);
+                        }
+                    },
+                    glutin::WindowEvent::MouseInput { state, button, .. } => {
+                        match button {
+                            glutin::MouseButton::Left => left_down = state == glutin::ElementState::Pressed,
+                            glutin::MouseButton::Right => right_down = state == glutin::ElementState::Pressed,
+                            glutin::MouseButton::Middle => middle_down = state == glutin::ElementState::Pressed,
                             _ => {}
                         }
                     },

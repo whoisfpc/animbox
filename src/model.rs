@@ -1,6 +1,7 @@
 use gl::types::*;
 use glm;
 
+#[allow(dead_code)]
 struct ModelVertex {
     position: glm::Vec3,
     normal: glm::Vec3
@@ -85,20 +86,6 @@ impl Model {
         self.set_buffers(&vertices, &indices);
     }
 
-    pub fn make_triangle(&mut self) {
-        let vertices = vec![
-            ModelVertex::new(glm::vec3(-0.5, -0.5, 0.0), glm::vec3(1.0, 0.0, 0.0)),
-            ModelVertex::new(glm::vec3(0.5, -0.5, 0.0), glm::vec3(0.0, 1.0, 0.0)),
-            ModelVertex::new(glm::vec3(0.0, 0.5, 0.0), glm::vec3(0.0, 0.0, 1.0)),
-        ];
-
-        let indices: Vec<u32> = vec![
-            0, 1, 2
-        ];
-
-        self.set_buffers(&vertices, &indices);
-    }
-
     fn set_buffers(&mut self, vertices: &[ModelVertex], indices: &[u32]) {
         self.count = indices.len() as GLsizei;
 
@@ -132,10 +119,10 @@ impl Model {
                 std::ptr::null()
             );
 
-            let color_location: GLuint = 1;
-            gl::EnableVertexAttribArray(color_location);
+            let norm_location: GLuint = 1;
+            gl::EnableVertexAttribArray(norm_location);
             gl::VertexAttribPointer(
-                color_location,
+                norm_location,
                 3,
                 gl::FLOAT,
                 gl::FALSE,
@@ -144,32 +131,11 @@ impl Model {
             );
 
             gl::DisableVertexAttribArray(pos_location);
-            gl::DisableVertexAttribArray(color_location);
+            gl::DisableVertexAttribArray(norm_location);
 
             gl::BindVertexArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-        }
-    }
-
-    pub fn draw_triangle(&self, shader: GLuint) {
-        unsafe {
-            let pos_location: GLuint = 0;
-            let color_location: GLuint = 1;
-            gl::UseProgram(shader);
-
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.index_buffer);
-            gl::BindVertexArray(self.vao);
-            gl::EnableVertexAttribArray(pos_location);
-            gl::EnableVertexAttribArray(color_location);
-
-            gl::DrawElements(gl::TRIANGLES, self.count, gl::UNSIGNED_INT, std::ptr::null());
-
-            gl::DisableVertexAttribArray(pos_location);
-            gl::DisableVertexAttribArray(color_location);
-            gl::BindVertexArray(self.vao);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-            gl::UseProgram(0);
         }
     }
 
