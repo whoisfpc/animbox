@@ -15,10 +15,13 @@ mod spinning_cube;
 
 fn main() {
 
+    let mut width: f32 = 900.0;
+    let mut height: f32 = 700.0;
+
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("animbox")
-        .with_dimensions(LogicalSize::new(900.0, 700.0));
+        .with_dimensions(LogicalSize::new(width as f64, height as f64));
     let context = glutin::ContextBuilder::new().with_vsync(true);
     let gl_window = glutin::GlWindow::new(window, context, &events_loop).unwrap();
 
@@ -28,7 +31,7 @@ fn main() {
 
     unsafe {
         gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
-        gl::Viewport(0, 0, 900, 700);
+        gl::Viewport(0, 0, width as i32, height as i32);
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
         gl::Enable(gl::DEPTH_TEST);
         gl::Enable(gl::CULL_FACE);
@@ -36,7 +39,7 @@ fn main() {
 
     let shader_program = ShaderProgram::from_file("model", ProgramType::Render);
     let mut camera = camera::Camera::new();
-    camera.set_aspect(900.0 / 700.0);
+    camera.set_aspect(width / height);
     let mut cube = spinning_cube::SpinningCube::new();
 
     let mut running = true;
@@ -49,7 +52,10 @@ fn main() {
                     glutin::WindowEvent::Resized(logical_size) => {
                         let dpi_factor = gl_window.get_hidpi_factor();
                         gl_window.resize(logical_size.to_physical(dpi_factor));
-                        unsafe { gl::Viewport(0, 0, logical_size.width as i32, logical_size.height as i32); }
+                        width = logical_size.width as f32;
+                        height = logical_size.height as f32;
+                        unsafe { gl::Viewport(0, 0, width as i32, height as i32); }
+                        camera.set_aspect(width / height);
                     },
                     glutin::WindowEvent::KeyboardInput { input, .. } => {
                         match input.virtual_keycode {
