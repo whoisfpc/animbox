@@ -1,5 +1,6 @@
 use gl::types::*;
 use glm;
+use buffer::*;
 
 #[allow(dead_code)]
 struct ModelVertex {
@@ -17,22 +18,17 @@ impl ModelVertex {
 }
 
 pub struct Model {
-    vertex_buffer: GLuint,
-    index_buffer: GLuint,
-    vao: GLuint,
+    vertex_buffer: ArrayBuffer,
+    index_buffer: ElementArrayBuffer,
+    vao: VertexArray,
     count: GLsizei,
 }
 
 impl Model {
     pub fn new() -> Model {
-        let mut vertex_buffer: GLuint = 0;
-        let mut index_buffer: GLuint = 0;
-        let mut vao: GLuint = 0;
-        unsafe {
-            gl::GenBuffers(1, &mut vertex_buffer);
-            gl::GenBuffers(1, &mut index_buffer);
-            gl::GenVertexArrays(1, &mut vao);
-        }
+        let vertex_buffer = ArrayBuffer::new();
+        let index_buffer = ElementArrayBuffer::new();
+        let vao = VertexArray::new();
         Model {
             vertex_buffer,
             index_buffer,
@@ -89,25 +85,15 @@ impl Model {
     fn set_buffers(&mut self, vertices: &[ModelVertex], indices: &[u32]) {
         self.count = indices.len() as GLsizei;
 
+        self.vao.bind();
+
+        self.vertex_buffer.bind();
+        self.vertex_buffer.static_draw_data(&vertices);
+
+        self.index_buffer.bind();
+        self.index_buffer.static_draw_data(&indices);
+
         unsafe {
-            gl::BindVertexArray(self.vao);
-
-            gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);
-            gl::BufferData(
-                gl::ARRAY_BUFFER,
-                (vertices.len() * std::mem::size_of::<ModelVertex>()) as GLsizeiptr,
-                vertices.as_ptr() as *const GLvoid,
-                gl::STATIC_DRAW,
-            );
-
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.index_buffer);
-            gl::BufferData(
-                gl::ELEMENT_ARRAY_BUFFER,
-                (indices.len() * std::mem::size_of::<u32>()) as GLsizeiptr,
-                indices.as_ptr() as *const GLvoid,
-                gl::STATIC_DRAW,
-            );
-
             let pos_location: GLuint = 0;
             gl::EnableVertexAttribArray(pos_location);
             gl::VertexAttribPointer(
@@ -132,11 +118,11 @@ impl Model {
 
             gl::DisableVertexAttribArray(pos_location);
             gl::DisableVertexAttribArray(norm_location);
-
-            gl::BindVertexArray(0);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
         }
+
+        self.vao.unbind();
+        self.vertex_buffer.unbind();
+        self.index_buffer.unbind();
     }
 
     pub fn draw(&self, model_mat: glm::Mat4, view_proj_mat: glm::Mat4, shader: GLuint) {
@@ -146,10 +132,10 @@ impl Model {
 
             let mvp_mat = view_proj_mat * model_mat;
             gl::UniformMatrix4fv(gl::GetUniformLocation(shader, b"ModelViewProjMtx\0".as_ptr() as _), 1, gl::FALSE, mvp_mat.as_slice().as_ptr() as _);
-
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.index_buffer);
-            gl::BindVertexArray(self.vao);
-
+        }
+        self.index_buffer.bind();
+        self.vao.bind();
+        unsafe {
             let pos_location: GLuint = 0;
             let norm_location: GLuint = 1;
 
@@ -160,19 +146,9 @@ impl Model {
 
             gl::DisableVertexAttribArray(pos_location);
             gl::DisableVertexAttribArray(norm_location);
-            gl::BindVertexArray(self.vao);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-            gl::UseProgram(0);
         }
-    }
-}
-
-impl Drop for Model {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteBuffers(1, &mut self.index_buffer);
-            gl::DeleteBuffers(1, &mut self.vertex_buffer);
-            gl::DeleteVertexArrays(1, &mut self.vao);
-        }
+        self.vao.unbind();
+        self.index_buffer.unbind();
+        unsafe { gl::UseProgram(0); }
     }
 }

@@ -12,8 +12,13 @@ use shader_program::*;
 mod model;
 mod camera;
 mod spinning_cube;
+mod buffer;
 
 fn main() {
+    run();
+}
+
+fn run() {
 
     let mut width: f32 = 900.0;
     let mut height: f32 = 700.0;
@@ -71,6 +76,7 @@ fn main() {
                                     cube.reset();
                                 }
                             },
+                            Some(glutin::VirtualKeyCode::Escape) => running = false,
                             _ => {}
                         }
                     },
