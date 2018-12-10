@@ -19,14 +19,14 @@ impl SpinningCube {
             cube,
             position: glm::vec3(0.0, 0.0, 0.0),
             axis: glm::vec3(0.0, 1.0, 0.0),
-            spin_delta: 0.01,
+            spin_delta: 1.0,
             angle: 0.0,
             world_mat: glm::Mat4::identity()
         }
     }
 
-    pub fn update(&mut self) {
-        self.angle += self.spin_delta;
+    pub fn update(&mut self, dt: f32) {
+        self.angle += self.spin_delta * dt;
         self.world_mat = glm::rotation(self.angle, &self.axis);
         self.world_mat = glm::translate(&self.world_mat, &self.position);
     }

@@ -2,6 +2,8 @@ extern crate glutin;
 extern crate gl;
 extern crate nalgebra_glm as glm;
 
+use std::time::Instant;
+
 use glutin::GlContext;
 use glutin::Event;
 use glutin::dpi::*;
@@ -53,6 +55,8 @@ fn run() {
     let mut cube = spinning_cube::SpinningCube::new();
 
     let mut running = true;
+    let now = Instant::now();
+    let mut last_time = now.elapsed();
 
     while running {
         events_loop.poll_events(|event| {
@@ -119,9 +123,15 @@ fn run() {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
+        let current_time = now.elapsed();
+        let delta_time = current_time - last_time;
+        let secs = delta_time.as_secs();
+        let sub_nanos = delta_time.subsec_nanos();
+        let dt: f32 = secs as f32 + sub_nanos as f32 / 1000000000.0f32;
         camera.update();
-        cube.update();
+        cube.update(dt);
         cube.draw(camera.get_view_proj_mat(), shader_program.id());
+        last_time = current_time;
 
         gl_window.swap_buffers().unwrap();
     }
