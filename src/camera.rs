@@ -1,5 +1,3 @@
-use glm;
-
 pub struct Camera {
     fov: f32,
     aspect: f32,

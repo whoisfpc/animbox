@@ -1,7 +1,3 @@
-extern crate glutin;
-extern crate gl;
-extern crate nalgebra_glm as glm;
-
 use std::time::Instant;
 
 use glutin::GlContext;
@@ -9,7 +5,7 @@ use glutin::Event;
 use glutin::dpi::*;
 
 mod shader_program;
-use shader_program::*;
+use crate::shader_program::*;
 
 mod model;
 mod camera;

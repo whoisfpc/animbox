@@ -1,5 +1,4 @@
-use model::*;
-use glm;
+use crate::model::*;
 use gl::types::*;
 
 pub struct SpinningCube {

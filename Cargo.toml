@@ -2,8 +2,9 @@
 name = "animbox"
 version = "0.1.0"
 authors = ["whoisfpc <wo_fpc@outlook.com>"]
+edition = "2018"
 
 [dependencies]
 glutin = "0.19.0"
 gl = "0.11.0"
-nalgebra-glm = "0.2.0"
+glm = { version = "0.2.0", package = "nalgebra-glm" }

@@ -1,6 +1,5 @@
 use gl::types::*;
-use glm;
-use buffer::*;
+use crate::buffer::*;
 
 #[allow(dead_code)]
 struct ModelVertex {
