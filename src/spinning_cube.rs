@@ -24,6 +24,10 @@ impl SpinningCube {
         }
     }
 
+    pub fn set_position(&mut self, pos: glm::Vec3) {
+        self.position = pos
+    }
+
     pub fn update(&mut self, dt: f32) {
         self.angle += self.spin_delta * dt;
         self.world_mat = glm::rotation(self.angle, &self.axis);

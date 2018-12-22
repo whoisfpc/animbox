@@ -41,14 +41,23 @@ fn run() {
         gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         gl::Viewport(0, 0, width as i32, height as i32);
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+
         gl::Enable(gl::DEPTH_TEST);
+        gl::DepthFunc(gl::LEQUAL);
+
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::ONE, gl::ONE);
+
         gl::Enable(gl::CULL_FACE);
+        gl::CullFace(gl::BACK);
     }
 
     let shader_program = ShaderProgram::from_file("model", ProgramType::Render);
     let mut camera = camera::Camera::new();
     camera.set_aspect(width / height);
     let mut cube = spinning_cube::SpinningCube::new();
+    let mut cube2 = spinning_cube::SpinningCube::new();
+    cube2.set_position(glm::vec3(0.0, 3.0, 0.0));
 
     let mut running = true;
     let now = Instant::now();
@@ -110,6 +119,13 @@ fn run() {
                             _ => {}
                         }
                     },
+                    glutin::WindowEvent::MouseWheel { delta, .. } => {
+                        if let glutin::MouseScrollDelta::LineDelta(_lines, rows) = delta {
+                            let rate = 0.05;
+                            let distance = glm::clamp_scalar(camera.get_distance() * (1.0 - rows * rate), 0.01, 1000.0);
+                            camera.set_distance(distance);
+                        }
+                    },
                     _ => ()
                 },
                 _ => ()
@@ -127,6 +143,8 @@ fn run() {
         camera.update();
         cube.update(dt);
         cube.draw(camera.get_view_proj_mat(), shader_program.id());
+        cube2.update(dt);
+        cube2.draw(camera.get_view_proj_mat(), shader_program.id());
         last_time = current_time;
 
         gl_window.swap_buffers().unwrap();
