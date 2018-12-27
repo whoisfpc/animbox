@@ -57,7 +57,7 @@ fn run() {
     camera.set_aspect(width / height);
     let mut cube = spinning_cube::SpinningCube::new();
     let mut cube2 = spinning_cube::SpinningCube::new();
-    cube2.set_position(glm::vec3(0.0, 3.0, 0.0));
+    cube2.set_position(glm::vec3(3.0, 3.0, 0.0));
 
     let mut running = true;
     let now = Instant::now();

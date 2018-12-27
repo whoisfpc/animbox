@@ -30,8 +30,9 @@ impl SpinningCube {
 
     pub fn update(&mut self, dt: f32) {
         self.angle += self.spin_delta * dt;
-        self.world_mat = glm::rotation(self.angle, &self.axis);
+        self.world_mat = glm::Mat4::identity();
         self.world_mat = glm::translate(&self.world_mat, &self.position);
+        self.world_mat = glm::rotate(&self.world_mat, self.angle, &self.axis);
     }
 
     pub fn draw(&self, view_proj_mat: glm::Mat4, shader: GLuint) {
