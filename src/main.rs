@@ -46,7 +46,7 @@ fn run() {
         gl::DepthFunc(gl::LEQUAL);
 
         gl::Enable(gl::BLEND);
-        gl::BlendFunc(gl::ONE, gl::ONE);
+        gl::BlendFunc(gl::ONE, gl::ZERO);
 
         gl::Enable(gl::CULL_FACE);
         gl::CullFace(gl::BACK);
