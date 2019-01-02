@@ -30,7 +30,10 @@ fn run() {
     let window = glutin::WindowBuilder::new()
         .with_title("animbox")
         .with_dimensions(LogicalSize::new(width as f64, height as f64));
-    let context = glutin::ContextBuilder::new().with_vsync(true);
+    let context = glutin::ContextBuilder::new()
+        .with_gl_profile(glutin::GlProfile::Core)
+        .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 3)))
+        .with_vsync(true);
     let gl_window = glutin::GlWindow::new(window, context, &events_loop).unwrap();
 
     unsafe {

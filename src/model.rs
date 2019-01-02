@@ -115,8 +115,6 @@ impl Model {
                 (3 * std::mem::size_of::<f32>()) as *const GLvoid
             );
 
-            gl::DisableVertexAttribArray(pos_location);
-            gl::DisableVertexAttribArray(norm_location);
         }
 
         self.vao.unbind();
@@ -135,16 +133,7 @@ impl Model {
         self.index_buffer.bind();
         self.vao.bind();
         unsafe {
-            let pos_location: GLuint = 0;
-            let norm_location: GLuint = 1;
-
-            gl::EnableVertexAttribArray(pos_location);
-            gl::EnableVertexAttribArray(norm_location);
-
             gl::DrawElements(gl::TRIANGLES, self.count, gl::UNSIGNED_INT, std::ptr::null());
-
-            gl::DisableVertexAttribArray(pos_location);
-            gl::DisableVertexAttribArray(norm_location);
         }
         self.vao.unbind();
         self.index_buffer.unbind();
